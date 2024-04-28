@@ -1,0 +1,10 @@
+GET http://localhost:3001/api/phonebook/
+
+###
+POST  http://localhost:3001/api/phonebook/
+Content-Type: application/json
+
+  {
+    "name": "Mary Lovelasce",
+    "number": "39-23-512351"
+  }
