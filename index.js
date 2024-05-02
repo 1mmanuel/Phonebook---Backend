@@ -1,8 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
+
+const Person = require("./models/person");
 
 morgan.token("type", function (req, res) {
   return JSON.stringify(req.body);
@@ -49,7 +52,9 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/phonebook", (request, response) => {
-  response.json(phonebook);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/api/phonebook/:id", (request, response) => {
@@ -76,34 +81,44 @@ app.post("/api/phonebook", (request, response) => {
   };
 
   const personContent = request.body;
-  const existingPerson = phonebook.find(
-    (person) => person.name === personContent.name
-  );
+  // const existingPerson = phonebook.find(
+  //   (person) => person.name === personContent.name
+  // );
 
-  if (!personContent.name) {
+  // if (!personContent.name) {
+  //   return response.status(400).json({
+  //     error: "content missing",
+  //   });
+  // }
+
+  if (personContent.person === undefined) {
     return response.status(400).json({
       error: "content missing",
     });
   }
 
-  if (existingPerson) {
-    return response.status(409).json({
-      error: "name must be unique",
-    });
-  }
+  // if (existingPerson) {
+  //   return response.status(409).json({
+  //     error: "name must be unique",
+  //   });
+  // }
 
-  const person = {
+  const person = new Person({
     id: generateId(),
-    name: personContent.name,
+    person: personContent.person,
     number: personContent.number,
-  };
+  });
 
-  phonebook = phonebook.concat(person);
+  // phonebook = phonebook.concat(person);
 
-  response.json(person);
+  // response.json(person);
+
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
