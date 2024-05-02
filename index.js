@@ -19,6 +19,18 @@ app.use(
 app.use(cors());
 app.use(express.static("dist"));
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
+
 let phonebook = [
   {
     id: 1,
@@ -68,19 +80,35 @@ app.get("/api/phonebook/:id", (request, response) => {
   }
 });
 
-app.delete("/api/phonebook/:id", (request, response) => {
-  const id = Number(request.params.id);
-  phonebook = phonebook.filter((person) => person.id !== id);
-
-  response.status(204).end();
+app.delete("/api/phonebook/:id", (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
-app.post("/api/phonebook", (request, response) => {
-  const generateId = () => {
-    return Math.floor(Math.random() * 1000);
-  };
+app.post("/api/phonebook", (request, response, next) => {
+  // const generateId = () => {
+  //   return Math.floor(Math.random() * 1000);
+  // };
 
   const personContent = request.body;
+  const personName = personContent.person;
+
+  Person.find({ person: personName }).then((persons) => {
+    if (persons) {
+      console.log(persons);
+      Person.findByIdAndUpdate(persons.id, personContent, {
+        new: true,
+      })
+        .then((updatedNote) => {
+          console.log("updatedNote");
+          // response.json(updatedNote);
+        })
+        .catch((error) => next(error));
+    }
+  });
   // const existingPerson = phonebook.find(
   //   (person) => person.name === personContent.name
   // );
@@ -104,7 +132,7 @@ app.post("/api/phonebook", (request, response) => {
   // }
 
   const person = new Person({
-    id: generateId(),
+    // id: generateId(),
     person: personContent.person,
     number: personContent.number,
   });
