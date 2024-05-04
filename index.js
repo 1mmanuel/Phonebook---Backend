@@ -97,16 +97,31 @@ app.post("/api/phonebook", (request, response, next) => {
   const personName = personContent.person;
 
   Person.find({ person: personName }).then((persons) => {
-    if (persons) {
+    if (persons.length > 0) {
       console.log(persons);
-      Person.findByIdAndUpdate(persons.id, personContent, {
+      Person.findByIdAndUpdate(persons[0].id, personContent, {
         new: true,
       })
-        .then((updatedNote) => {
-          console.log("updatedNote");
-          // response.json(updatedNote);
+        .then((updatedPerson) => {
+          response.json(updatedPerson);
         })
         .catch((error) => next(error));
+    } else {
+      if (personContent.person === undefined) {
+        return response.status(400).json({
+          error: "content missing",
+        });
+      }
+
+      const person = new Person({
+        // id: generateId(),
+        person: personContent.person,
+        number: personContent.number,
+      });
+
+      person.save().then((savedPerson) => {
+        response.json(savedPerson);
+      });
     }
   });
   // const existingPerson = phonebook.find(
@@ -119,11 +134,11 @@ app.post("/api/phonebook", (request, response, next) => {
   //   });
   // }
 
-  if (personContent.person === undefined) {
-    return response.status(400).json({
-      error: "content missing",
-    });
-  }
+  // if (personContent.person === undefined) {
+  //   return response.status(400).json({
+  //     error: "content missing",
+  //   });
+  // }
 
   // if (existingPerson) {
   //   return response.status(409).json({
@@ -131,19 +146,19 @@ app.post("/api/phonebook", (request, response, next) => {
   //   });
   // }
 
-  const person = new Person({
-    // id: generateId(),
-    person: personContent.person,
-    number: personContent.number,
-  });
+  // const person = new Person({
+  //   // id: generateId(),
+  //   person: personContent.person,
+  //   number: personContent.number,
+  // });
 
   // phonebook = phonebook.concat(person);
 
   // response.json(person);
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  // person.save().then((savedPerson) => {
+  //   response.json(savedPerson);
+  // });
 });
 
 const PORT = process.env.PORT;
