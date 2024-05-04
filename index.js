@@ -59,8 +59,13 @@ const phonebookLenght = phonebook.length;
 
 app.get("/info", (request, response) => {
   console.log(requestReceivedTime);
-  response.send(`<p>Phonebook has info for ${phonebookLenght} people </p>
-  <p>${requestReceivedTime}</p>`);
+  // response.send(`<p>Phonebook has info for ${phonebookLenght} people </p>
+  // <p>${requestReceivedTime}</p>`);
+
+  Person.find({}).then((persons) => {
+    response.send(`<p>Phonebook has info for ${persons.length} people </p>
+    <p>${requestReceivedTime}</p>`);
+  });
 });
 
 app.get("/api/phonebook", (request, response) => {
@@ -69,15 +74,21 @@ app.get("/api/phonebook", (request, response) => {
   });
 });
 
-app.get("/api/phonebook/:id", (request, response) => {
-  const id = Number(request.params.id);
+app.get("/api/phonebook/:id", (request, response, next) => {
+  const id = request.params.id;
+  console.log(request.params.id);
   const persons = phonebook.find((person) => person.id === id);
 
-  if (persons) {
-    response.json(persons);
-  } else {
-    response.status(404).end();
-  }
+  Person.findById(id)
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => next(error));
+  // if (persons) {
+  //   response.json(persons);
+  // } else {
+  //   response.status(404).end();
+  // }
 });
 
 app.delete("/api/phonebook/:id", (request, response, next) => {
