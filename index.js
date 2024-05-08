@@ -35,38 +35,10 @@ const errorHandler = (error, request, response, next) => {
 
 app.use(errorHandler);
 
-const opts = { runValidators: true };
-
-let phonebook = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
-
 const requestReceivedTime = new Date();
-const phonebookLenght = phonebook.length;
 
 app.get("/info", (request, response) => {
   console.log(requestReceivedTime);
-  // response.send(`<p>Phonebook has info for ${phonebookLenght} people </p>
-  // <p>${requestReceivedTime}</p>`);
 
   Person.find({}).then((persons) => {
     response.send(`<p>Phonebook has info for ${persons.length} people </p>
@@ -83,18 +55,12 @@ app.get("/api/phonebook", (request, response) => {
 app.get("/api/phonebook/:id", (request, response, next) => {
   const id = request.params.id;
   console.log(request.params.id);
-  // const persons = phonebook.find((person) => person.id === id);
 
   Person.findById(id)
     .then((persons) => {
       response.json(persons);
     })
     .catch((error) => next(error));
-  // if (persons) {
-  //   response.json(persons);
-  // } else {
-  //   response.status(404).end();
-  // }
 });
 
 app.delete("/api/phonebook/:id", (request, response, next) => {
@@ -106,10 +72,6 @@ app.delete("/api/phonebook/:id", (request, response, next) => {
 });
 
 app.post("/api/phonebook", (request, response, next) => {
-  // const generateId = () => {
-  //   return Math.floor(Math.random() * 1000);
-  // };
-
   const personContent = request.body;
   const personName = personContent.person;
 
@@ -132,7 +94,6 @@ app.post("/api/phonebook", (request, response, next) => {
       }
 
       const person = new Person({
-        // id: generateId(),
         person: personContent.person,
         number: personContent.number,
       });
@@ -145,41 +106,6 @@ app.post("/api/phonebook", (request, response, next) => {
         .catch((error) => next(error));
     }
   });
-  // const existingPerson = phonebook.find(
-  //   (person) => person.name === personContent.name
-  // );
-
-  // if (!personContent.name) {
-  //   return response.status(400).json({
-  //     error: "content missing",
-  //   });
-  // }
-
-  // if (personContent.person === undefined) {
-  //   return response.status(400).json({
-  //     error: "content missing",
-  //   });
-  // }
-
-  // if (existingPerson) {
-  //   return response.status(409).json({
-  //     error: "name must be unique",
-  //   });
-  // }
-
-  // const person = new Person({
-  //   // id: generateId(),
-  //   person: personContent.person,
-  //   number: personContent.number,
-  // });
-
-  // phonebook = phonebook.concat(person);
-
-  // response.json(person);
-
-  // person.save().then((savedPerson) => {
-  //   response.json(savedPerson);
-  // });
 });
 
 const PORT = process.env.PORT;
